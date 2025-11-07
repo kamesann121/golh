@@ -47,20 +47,6 @@ const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-// ボール（物理）
-const ballBody = new CANNON.Body({
-  mass: 1,
-  shape: new CANNON.Sphere(1),
-  position: new CANNON.Vec3(0, 5, 0),
-});
-world.addBody(ballBody);
-
-// ボール（表示）
-const ballGeometry = new THREE.SphereGeometry(1, 32, 32);
-const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-const ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
-scene.add(ballMesh);
-
 // カップ（表示）
 const cupGeometry = new THREE.CylinderGeometry(1.2, 1.2, 0.5, 32);
 const cupMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
@@ -100,71 +86,61 @@ const wallBody = new CANNON.Body({
 });
 world.addBody(wallBody);
 
-// ゲーム状態
-const gameState = {
-  currentRound: 1,
-  maxRounds: 3,
-  score: [],
-  goalReached: false,
-  shotCount: 0
-};
+// プレイヤー初期化
+const playerConfigs = [
+  { name: "プレイヤー1", color: 0xff4444, start: [-5, 5, 0] },
+  { name: "プレイヤー2", color: 0x4444ff, start: [5, 5, 0] }
+];
+
+const players = playerConfigs.map((config) => {
+  const body = new CANNON.Body({
+    mass: 1,
+    shape: new CANNON.Sphere(1),
+    position: new CANNON.Vec3(...config.start)
+  });
+  world.addBody(body);
+
+  const geometry = new THREE.SphereGeometry(1, 32, 32);
+  const material = new THREE.MeshStandardMaterial({ color: config.color });
+  const mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  return {
+    name: config.name,
+    color: config.color,
+    ballBody: body,
+    ballMesh: mesh,
+    shotCount: 0,
+    score: [],
+    goalReached: false
+  };
+});
 
 // 操作セットアップ
-setupControl(renderer.domElement, ballBody, gameState);
+setupControl(renderer.domElement, players, camera);
 
 // ゴール判定
-function checkGoal() {
-  if (gameState.goalReached) return;
+function checkGoals() {
+  players.forEach((player) => {
+    if (player.goalReached) return;
 
-  const dx = ballBody.position.x - cupMesh.position.x;
-  const dz = ballBody.position.z - cupMesh.position.z;
-  const distance = Math.sqrt(dx * dx + dz * dz);
+    const dx = player.ballBody.position.x - cupMesh.position.x;
+    const dz = player.ballBody.position.z - cupMesh.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
 
-  if (distance < 1.2 && ballBody.position.y < 1) {
-    console.log("ゴール！");
-    gameState.goalReached = true;
-    gameState.score.push(gameState.shotCount);
-    setTimeout(nextRound, 1500);
-  }
-}
-
-// ラウンド進行
-function nextRound() {
-  if (gameState.currentRound >= gameState.maxRounds) {
-    console.log("ラウンド終了！スコア:", gameState.score);
-    const total = gameState.score.reduce((a, b) => a + b, 0);
-    console.log("合計打数:", total);
-    return;
-  }
-
-  gameState.currentRound++;
-  gameState.goalReached = false;
-  gameState.shotCount = 0;
-
-  ballBody.velocity.setZero();
-  ballBody.angularVelocity.setZero();
-
-  // ラウンドごとの地形変更
-  if (gameState.currentRound === 2) {
-    ballBody.position.set(-10, 5, -10);
-    cupMesh.position.set(10, 0.25, 10);
-  } else if (gameState.currentRound === 3) {
-    ballBody.position.set(0, 5, -15);
-    cupMesh.position.set(-10, 0.25, 15);
-  } else {
-    ballBody.position.set(0, 5, 0);
-    cupMesh.position.set(10, 0.25, 0);
-  }
+    if (distance < 1.2 && player.ballBody.position.y < 1) {
+      console.log(`${player.name} ゴール！`);
+      player.goalReached = true;
+      player.score.push(player.shotCount);
+    }
+  });
 }
 
 // アニメーション
 function animate() {
   requestAnimationFrame(animate);
   world.step(1 / 60);
-  ballMesh.position.copy(ballBody.position);
-  ballMesh.quaternion.copy(ballBody.quaternion);
-  checkGoal();
-  updateScoreUI(gameState);
-  renderer.render(scene, camera);
-}
-animate();
+
+  players.forEach((player) => {
+    player.ballMesh.position.copy(player.ballBody.position);
+    player.ballMesh.quaternion.copy
