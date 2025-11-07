@@ -72,11 +72,12 @@ const gameState = {
   currentRound: 1,
   maxRounds: 3,
   score: [],
-  goalReached: false
+  goalReached: false,
+  shotCount: 0
 };
 
 // 操作処理をセットアップ
-setupControl(renderer.domElement, ballBody);
+setupControl(renderer.domElement, ballBody, gameState);
 
 // ゴール判定
 function checkGoal() {
@@ -89,7 +90,7 @@ function checkGoal() {
   if (distance < 1.2 && ballBody.position.y < 1) {
     console.log("ゴール！");
     gameState.goalReached = true;
-    gameState.score.push(gameState.currentRound); // 仮スコア（後でショット数に変更）
+    gameState.score.push(gameState.shotCount);
     setTimeout(nextRound, 1500);
   }
 }
@@ -98,11 +99,14 @@ function checkGoal() {
 function nextRound() {
   if (gameState.currentRound >= gameState.maxRounds) {
     console.log("ラウンド終了！スコア:", gameState.score);
+    const total = gameState.score.reduce((a, b) => a + b, 0);
+    console.log("合計打数:", total);
     return;
   }
 
   gameState.currentRound++;
   gameState.goalReached = false;
+  gameState.shotCount = 0;
 
   ballBody.velocity.setZero();
   ballBody.angularVelocity.setZero();
