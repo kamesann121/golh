@@ -1,14 +1,24 @@
 import * as THREE from 'https://cdn.skypack.dev/three';
 import * as CANNON from 'https://cdn.skypack.dev/cannon-es';
+import { setupControl } from './control.js';
 
+// シーンとカメラの設定
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xaaddff);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 camera.position.set(0, 10, 20);
 camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('displayCanvas') });
+// レンダラーの設定
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById('displayCanvas'),
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // ライト
@@ -16,7 +26,7 @@ const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(10, 20, 10);
 scene.add(light);
 
-// Cannon.jsの物理ワールド
+// Cannon.js 物理ワールド
 const world = new CANNON.World({
   gravity: new CANNON.Vec3(0, -9.82, 0),
 });
@@ -50,7 +60,10 @@ const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
 scene.add(ballMesh);
 
-// アニメーション
+// 操作処理をセットアップ
+setupControl(renderer.domElement, ballBody);
+
+// アニメーションループ
 function animate() {
   requestAnimationFrame(animate);
   world.step(1 / 60);
