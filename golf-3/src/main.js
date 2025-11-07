@@ -67,18 +67,46 @@ const cupMesh = new THREE.Mesh(cupGeometry, cupMaterial);
 cupMesh.position.set(10, 0.25, 0);
 scene.add(cupMesh);
 
+// ゲーム状態
+const gameState = {
+  currentRound: 1,
+  maxRounds: 3,
+  score: [],
+  goalReached: false
+};
+
 // 操作処理をセットアップ
 setupControl(renderer.domElement, ballBody);
 
 // ゴール判定
 function checkGoal() {
+  if (gameState.goalReached) return;
+
   const dx = ballBody.position.x - cupMesh.position.x;
   const dz = ballBody.position.z - cupMesh.position.z;
   const distance = Math.sqrt(dx * dx + dz * dz);
 
   if (distance < 1.2 && ballBody.position.y < 1) {
     console.log("ゴール！");
+    gameState.goalReached = true;
+    gameState.score.push(gameState.currentRound); // 仮スコア（後でショット数に変更）
+    setTimeout(nextRound, 1500);
   }
+}
+
+// ラウンド進行
+function nextRound() {
+  if (gameState.currentRound >= gameState.maxRounds) {
+    console.log("ラウンド終了！スコア:", gameState.score);
+    return;
+  }
+
+  gameState.currentRound++;
+  gameState.goalReached = false;
+
+  ballBody.velocity.setZero();
+  ballBody.angularVelocity.setZero();
+  ballBody.position.set(0, 5, 0);
 }
 
 // アニメーションループ
