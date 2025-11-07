@@ -68,6 +68,38 @@ const cupMesh = new THREE.Mesh(cupGeometry, cupMaterial);
 cupMesh.position.set(10, 0.25, 0);
 scene.add(cupMesh);
 
+// 障害物：坂道（表示）
+const slopeGeometry = new THREE.PlaneGeometry(10, 10);
+const slopeMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+const slopeMesh = new THREE.Mesh(slopeGeometry, slopeMaterial);
+slopeMesh.rotation.x = -Math.PI / 4;
+slopeMesh.position.set(-15, 2.5, 0);
+scene.add(slopeMesh);
+
+// 坂道（物理）
+const slopeBody = new CANNON.Body({
+  shape: new CANNON.Plane(),
+  type: CANNON.Body.STATIC
+});
+slopeBody.quaternion.setFromEuler(-Math.PI / 4, 0, 0);
+slopeBody.position.set(-15, 2.5, 0);
+world.addBody(slopeBody);
+
+// 障害物：壁（表示）
+const wallGeometry = new THREE.BoxGeometry(1, 5, 10);
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+wallMesh.position.set(5, 2.5, 0);
+scene.add(wallMesh);
+
+// 壁（物理）
+const wallBody = new CANNON.Body({
+  shape: new CANNON.Box(new CANNON.Vec3(0.5, 2.5, 5)),
+  type: CANNON.Body.STATIC,
+  position: new CANNON.Vec3(5, 2.5, 0)
+});
+world.addBody(wallBody);
+
 // ゲーム状態
 const gameState = {
   currentRound: 1,
@@ -111,7 +143,18 @@ function nextRound() {
 
   ballBody.velocity.setZero();
   ballBody.angularVelocity.setZero();
-  ballBody.position.set(0, 5, 0);
+
+  // ラウンドごとの地形変更
+  if (gameState.currentRound === 2) {
+    ballBody.position.set(-10, 5, -10);
+    cupMesh.position.set(10, 0.25, 10);
+  } else if (gameState.currentRound === 3) {
+    ballBody.position.set(0, 5, -15);
+    cupMesh.position.set(-10, 0.25, 15);
+  } else {
+    ballBody.position.set(0, 5, 0);
+    cupMesh.position.set(10, 0.25, 0);
+  }
 }
 
 // アニメーション
