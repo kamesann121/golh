@@ -8,7 +8,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 10, 20);
 camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas') });
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('displayCanvas') });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // ライト
@@ -29,7 +29,7 @@ const groundBody = new CANNON.Body({
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 world.addBody(groundBody);
 
-// 地面（見た目）
+// 地面（表示）
 const groundGeometry = new THREE.PlaneGeometry(50, 50);
 const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228822 });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -41,26 +41,21 @@ const ballBody = new CANNON.Body({
   mass: 1,
   shape: new CANNON.Sphere(1),
   position: new CANNON.Vec3(0, 5, 0),
-  material: new CANNON.Material(),
 });
 world.addBody(ballBody);
 
-// ボール（見た目）
+// ボール（表示）
 const ballGeometry = new THREE.SphereGeometry(1, 32, 32);
 const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
 scene.add(ballMesh);
 
-// アニメーションループ
+// アニメーション
 function animate() {
   requestAnimationFrame(animate);
-
   world.step(1 / 60);
-
-  // 物理の位置をThree.jsに反映
   ballMesh.position.copy(ballBody.position);
   ballMesh.quaternion.copy(ballBody.quaternion);
-
   renderer.render(scene, camera);
 }
 animate();
