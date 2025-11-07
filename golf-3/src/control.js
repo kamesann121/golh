@@ -1,4 +1,4 @@
-export function setupControl(canvas, ballBody) {
+export function setupControl(canvas, ballBody, gameState) {
   let isDragging = false;
   let start = null;
 
@@ -9,14 +9,14 @@ export function setupControl(canvas, ballBody) {
   });
 
   canvas.addEventListener('pointerup', (e) => {
-    if (!isDragging) return;
+    if (!isDragging || gameState.goalReached) return;
     const rect = canvas.getBoundingClientRect();
     const end = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
     const dx = start.x - end.x;
     const dy = start.y - end.y;
 
-    const forceScale = 0.02; // 調整用係数（3D用に少し大きめ）
+    const forceScale = 0.02;
     const force = {
       x: dx * forceScale,
       y: 0,
@@ -28,6 +28,7 @@ export function setupControl(canvas, ballBody) {
       ballBody.position
     );
 
+    gameState.shotCount++;
     isDragging = false;
   });
 }
