@@ -60,8 +60,26 @@ const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
 scene.add(ballMesh);
 
+// カップ（表示）
+const cupGeometry = new THREE.CylinderGeometry(1.2, 1.2, 0.5, 32);
+const cupMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+const cupMesh = new THREE.Mesh(cupGeometry, cupMaterial);
+cupMesh.position.set(10, 0.25, 0);
+scene.add(cupMesh);
+
 // 操作処理をセットアップ
 setupControl(renderer.domElement, ballBody);
+
+// ゴール判定
+function checkGoal() {
+  const dx = ballBody.position.x - cupMesh.position.x;
+  const dz = ballBody.position.z - cupMesh.position.z;
+  const distance = Math.sqrt(dx * dx + dz * dz);
+
+  if (distance < 1.2 && ballBody.position.y < 1) {
+    console.log("ゴール！");
+  }
+}
 
 // アニメーションループ
 function animate() {
@@ -69,6 +87,7 @@ function animate() {
   world.step(1 / 60);
   ballMesh.position.copy(ballBody.position);
   ballMesh.quaternion.copy(ballBody.quaternion);
+  checkGoal();
   renderer.render(scene, camera);
 }
 animate();
