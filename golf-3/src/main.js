@@ -1,8 +1,9 @@
 import * as THREE from 'https://cdn.skypack.dev/three';
 import * as CANNON from 'https://cdn.skypack.dev/cannon-es';
 import { setupControl } from './control.js';
+import { updateScoreUI } from './ui.js';
 
-// シーンとカメラの設定
+// シーンとカメラ
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xaaddff);
 
@@ -15,7 +16,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 10, 20);
 camera.lookAt(0, 0, 0);
 
-// レンダラーの設定
+// レンダラー
 const renderer = new THREE.WebGLRenderer({
   canvas: document.getElementById('displayCanvas'),
 });
@@ -26,7 +27,7 @@ const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(10, 20, 10);
 scene.add(light);
 
-// Cannon.js 物理ワールド
+// 物理ワールド
 const world = new CANNON.World({
   gravity: new CANNON.Vec3(0, -9.82, 0),
 });
@@ -76,7 +77,7 @@ const gameState = {
   shotCount: 0
 };
 
-// 操作処理をセットアップ
+// 操作セットアップ
 setupControl(renderer.domElement, ballBody, gameState);
 
 // ゴール判定
@@ -113,13 +114,14 @@ function nextRound() {
   ballBody.position.set(0, 5, 0);
 }
 
-// アニメーションループ
+// アニメーション
 function animate() {
   requestAnimationFrame(animate);
   world.step(1 / 60);
   ballMesh.position.copy(ballBody.position);
   ballMesh.quaternion.copy(ballBody.quaternion);
   checkGoal();
+  updateScoreUI(gameState);
   renderer.render(scene, camera);
 }
 animate();
