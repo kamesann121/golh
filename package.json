@@ -1,7 +1,9 @@
 {
-  "name": "multiplayer-golf-web",
+  "name": "golf-visualizer",
   "version": "1.0.0",
   "type": "module",
+  "description": "A physics-based golf visualization tool for educational and simulation purposes. Not a game.",
+  "keywords": ["golf", "physics", "visualization", "education", "threejs", "cannon"],
   "scripts": {
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js"
