@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: multiplayer-golf-web
+    name: golf-visualizer
     env: node
     branch: main
     buildCommand: "npm ci"
